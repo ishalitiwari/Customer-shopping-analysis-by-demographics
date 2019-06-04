@@ -1,0 +1,134 @@
+---
+title: "Customer Demographic Analysis"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+library(flexdashboard)
+library(ggplot2)
+library(plotly)
+library(rsconnect)
+```
+
+```{r global}
+
+library(dplyr) #A fast and consistent tool for working with data frame like objects
+library(lubridate) #Functions to work with date-times and time-spans
+library(ggplot2) #A system for 'declaratively' creating layered graphics
+library(data.table)
+
+households<-fread("data/5000_households.csv", strip.white=TRUE )
+products<-fread("data/5000_products.csv", strip.white=TRUE )
+transactions<-fread("data/5000_transactions.csv", strip.white=TRUE )
+
+
+names(households)[2]<-"LOYALTY"
+names(products)[5]<-"ORGANIC"
+names(transactions)[3]<-"PURCHASE_DATE"
+
+households<-cbind(households[,1],data.frame(apply(households[,2:9],2, factor)))
+products<-cbind(products[,1],data.frame(apply(products[,2:5],2, factor)))
+#transactions[,c(7,8,9)]<-lapply(transactions[,c(7,8,9)],factor)
+transactions$PURCHASE_DATE<-as.Date(transactions$PURCHASE_DATE,"%d-%b-%y")
+transactions$YEAR<-year(as.Date(as.character(transactions$YEAR),"%Y"))
+households$INCOME_RANGE<-factor(households$INCOME_RANGE, 
+                                levels =c("null","UNDER 35K","35-49K",
+                                          "50-74K","75-99K","100-150K","150K+"))
+transactions<-filter(transactions,SPEND<40, UNITS<10)
+transactions_clean<-transactions%>% filter(!((SPEND<0 & UNITS>0) | (SPEND>0 & UNITS<=0)))
+
+tp_clean<-transactions_clean %>% left_join(products, by="PRODUCT_NUM")
+
+X <-tp_clean %>% group_by(WEEK_NUM,HSHD_NUM) %>% 
+  filter(SPEND>0, UNITS>0) %>% 
+  summarize(Total_spent= sum(SPEND), Total_units=sum(UNITS))
+
+Y<-tp_clean %>% group_by(WEEK_NUM,HSHD_NUM) %>% 
+  filter(SPEND<0, UNITS<0) %>% 
+  summarize(Total_spent_return= sum(SPEND), Total_units_return=sum(UNITS))
+
+Z<-tp_clean %>% group_by(WEEK_NUM,HSHD_NUM) %>% 
+ summarize(Frequency= n_distinct(BASKET_NUM), No_of_dep=length(unique(DEPARTMENT)))
+
+tpx<-Reduce(left_join, list(X,Y,Z))
+
+AGE_RANGE<-tpx%>%
+  left_join(households, by="HSHD_NUM") %>% filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% group_by(AGE_RANGE,LOYALTY,WEEK_NUM) %>%
+  summarize(Spend_per_visit= mean((Total_spent/Frequency)), 
+            Avg_freq=round(mean(Frequency)), 
+            Avg_spend= mean(Total_spent), 
+            Avg_units_purchased= mean(Total_units), 
+            Avg_spend_return= mean(Total_spent_return, na.rm=T),
+            Avg_units_returned=mean(Total_units_return, na.rm=T))
+
+INCOME_RANGE<-tpx%>%
+  left_join(households, by="HSHD_NUM") %>% filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% group_by(INCOME_RANGE,LOYALTY,WEEK_NUM) %>%
+  summarize(Spend_per_visit= mean((Total_spent/Frequency)), 
+            Avg_freq=round(mean(Frequency)), 
+            Avg_spend= mean(Total_spent), 
+            Avg_units_purchased= mean(Total_units), 
+            Avg_spend_return= mean(Total_spent_return, na.rm=T),
+            Avg_units_returned=mean(Total_units_return, na.rm=T))
+ 
+```
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+```{r}
+selectInput("n_breaks", label = "Spend Metrics:",
+            choices = c("Avg_spend", "Spend_per_visit", "Avg_spend_return"), selected = "Avg_Spend")
+
+selectInput("Category", label = "Demographic:",
+            choices = c("AGE_RANGE", "INCOME_RANGE"), selected = "AGE_RANGE")
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+###Overall shoping pattern
+
+
+```{r}
+renderPlot({
+  
+ggplot(get(input$Category), 
+  aes_string(x=input$Category, y=input$n_breaks))+
+  geom_bar(stat="identity") +
+  facet_grid(LOYALTY~.) + 
+  xlab("Weeks") +
+  ylab("Spend Metrics")
+  
+})
+
+```
+
+### Shopping pattern of customers over time
+```{r}
+renderPlot({
+  
+ggplot(get(input$Category), 
+  aes_string(x="WEEK_NUM", y=input$n_breaks, color=input$Category))+
+  geom_smooth(se=F) +
+  facet_grid(LOYALTY~.) + 
+  xlab("Weeks") +
+  ylab("Spend Metrics")
+  
+})
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Data Details {data-width=400}
+
+```{r}
+renderTable({
+  get(input$Category)
+})
+```
