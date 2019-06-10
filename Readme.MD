@@ -1,20 +1,6 @@
----
-title: "Customer shopping analysis by demographics"
-output: 
-  html_document:
-    theme: united
-    df_print: paged
-    code_folding: hide
-    highlight: pygments
-author:
-- Nitesh Agarwal
-- Ishali Tiwari
----
 
+# Customer shopping analysis by demographics
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 
 #  {.tabset .tabset-fade .tabset-pills}
