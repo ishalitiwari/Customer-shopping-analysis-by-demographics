@@ -2,18 +2,14 @@
 # Customer shopping analysis by demographics
 
 
+# Introduction
 
-#  {.tabset .tabset-fade .tabset-pills}
-
-
-## Introduction
-
-###Problem Statement
+## Problem Statement
 To study the interaction of household demographics on shopping patterns
 
 ![](images/542176_5b71_2.jpg) !
 
-###Synopsis
+## Synopsis
 > *"If you deal with every customer in the same way, you will only close 25 to 30 percent of your contacts, because you will only close one personality type. But if you learn how to effectively work with all personality types, you can conceivably close 100 percent of your contacts."*
 **- Rod Nichols **
 
@@ -31,7 +27,7 @@ Our approach to address this problem statement would be extensive EDA to establi
 The patterns that emerge from this analysis will help Kroger strategize their marketing activities based on the identified key demographics and their historical performance. 
 
 
-##Packages Required
+## Packages Required
 
 The following packages have been utilized in this report. Please install them if you wish to reproduce the work.
 
@@ -60,10 +56,9 @@ library(plotly)
 library(knitr)
 ```
 
-##Data Preparation
-### {.tabset .tabset-fade .tabset-pills}
+## Data Preparation
 
-####Source of Data
+### Source of Data
 
 The data was sourced from Professor Bradley Boehmke's [Github](http://uc-r.github.io/data_wrangling/final-project "Github") and belongs to a leading grocerer. 
 
@@ -106,9 +101,9 @@ The first table contains demographic information for households in the following
 **ORGANIC**: If the product is organic or not (Y or N)
 
 
-####Data Cleaning
+### Data Cleaning
 
-#####Importing the data
+#### Importing the data
 
 Considering the large volume of data, we use "fread" for it's high speed and efficiency.
 
@@ -131,12 +126,12 @@ tables<-list(households,products,transactions)
 ```
 
 
-#####Viewing the data
+#### Viewing the data
 ```{r}
 lapply(tables, function(x) as_tibble(head(x)))
 ```
 
-#####Renaming the Columns
+#### Renaming the Columns
 
 Some of the columns in data are named incorrectly. Hence we rename them to add more context and enhance readability.
 
@@ -148,7 +143,7 @@ names(transactions)[3]<-"PURCHASE_DATE"
 ```
 
 
-#####Setting Datatypes
+#### Setting Datatypes
 
 ```{r results='hide'}
 structure<-list(lapply(tables,str))
@@ -168,7 +163,7 @@ households$INCOME_RANGE<-factor(households$INCOME_RANGE,
 
 ```
 
-#####Missing Values
+#### Missing Values
 
 ```{r results= "hide"}
 tables<-list(households,products,transactions)
@@ -191,7 +186,7 @@ sapply(tables,function(x) any(is.na(x)))
 
 Product and Transaction table do not have missing values
 
-#####Observing key categorical variables
+#### Observing key categorical variables
 
 ```{r}
 summary(households$INCOME_RANGE)
@@ -199,7 +194,7 @@ summary(households$AGE_RANGE)
 ```
 
 
-#####Observing key metric variables
+#### Observing key metric variables
 
 The columns in products and transactions tables do not have any missing values, however households contains missing values.
 
@@ -223,7 +218,7 @@ transactions<-filter(transactions,SPEND<40, UNITS<10)
 ```
 
 
-#####Abnormal values
+#### Abnormal values
 
 There exist values in transaction table where spend is less than 0 and units are greater than zero. There are also cases where spend is greater than zero, however units are less than zero. We would remove such values for our usage.
 
@@ -231,7 +226,7 @@ There exist values in transaction table where spend is less than 0 and units are
 transactions_clean<-transactions%>% filter(!((SPEND<0 & UNITS>0) | (SPEND>0 & UNITS<=0)))
 ```
 
-####Cleaned data
+### Cleaned data
 
 **Household data**
 
@@ -250,10 +245,9 @@ kable(head(transactions_clean,5))
 ```
 
 
-##Exploratory data analysis
-###  {.tabset .tabset-fade .tabset-pills}
+# Exploratory data analysis
 
-####Age
+### Age
 ```{r message=FALSE,warning=FALSE}
 ###Creating new variables
 tp_clean<-transactions_clean %>% left_join(products, by="PRODUCT_NUM")
@@ -288,7 +282,7 @@ Spend_by_Age<-tp%>%
 ```
 
 
-#####Total Spend pattern of customers by loyalty and age
+#### Total Spend pattern of customers by loyalty and age
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -303,7 +297,7 @@ Spend_by_Age %>%
 Loyal customers between the age of 35-44 are our highest spenders and visitors, however our customers aged 19-24 spend the highest per visit (approx $6 per visit).
 
 
-#####Spend per visit pattern of customers by loyalty and age
+#### Spend per visit pattern of customers by loyalty and age
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -319,7 +313,7 @@ Spend_by_Age %>%
 
 Loyal customers between 25-34 (young work force) have the highest return transaction amount. However, all customers in the 65-74 age group have high return amounts.
 
-#####Return transaction pattern of customers by loyalty and age
+#### Return transaction pattern of customers by loyalty and age
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -334,7 +328,7 @@ Spend_by_Age %>%
 
 Despite not being the highest spenders overall or per visit, the older customers tend to have the highest amount of returns. Moreover, the proportion of returns by non-loyal customers is higher for older customers.
 
-####Age over Time
+### Age over Time
 ```{r message=F, warning=F}
 X <-tp_clean %>% group_by(WEEK_NUM,HSHD_NUM) %>% 
   filter(SPEND>0, UNITS>0) %>% 
@@ -368,7 +362,7 @@ Spend_by_Age_TIME<-tpx%>%
 
 
 
-#####Total Spend pattern of customers by loyalty and age over time
+#### Total Spend pattern of customers by loyalty and age over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_TIME %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -384,7 +378,7 @@ Spend_by_Age_TIME %>%
 Non-loyal young customers have seen a sharp decline in their spending pattern with the retailer during 2017 which calls attention towards a potential engagement opportunity.
 
 
-#####Spend per visit pattern of customers by loyalty and age over time
+#### Spend per visit pattern of customers by loyalty and age over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_TIME %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -398,7 +392,7 @@ Spend_by_Age_TIME %>%
 
 The age group 19-24 shows high variability in their total spend as compared to other age groups.
 
-#####Return transaction pattern of customers by loyalty and age over time
+#### Return transaction pattern of customers by loyalty and age over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_TIME %>% 
   filter(!AGE_RANGE %in% c("NOT AVAILABLE","null")) %>% 
@@ -410,7 +404,7 @@ Spend_by_Age_TIME %>%
   ylab("Average spend returned") + scale_color_brewer(palette="Dark2")
 ```
 
-####Income Group
+### Income Group
 
 ```{r}
 Spend_by_Income<-tp%>%
@@ -426,7 +420,7 @@ Spend_by_Income<-tp%>%
    
 ```
 
-#####Total Spend pattern of customers by loyalty and income
+#### Total Spend pattern of customers by loyalty and income
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -440,7 +434,7 @@ Spend_by_Income %>%
 ```
 Surprisingly, there is not much difference between the total expenditure of loyal customers. 
 
-#####Spend per visit pattern of customers by loyalty and income
+#### Spend per visit pattern of customers by loyalty and income
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -455,7 +449,7 @@ Spend_by_Income %>%
 Despite overall spend being almost equal across income groups, we see the spend per visit to be more proportional to the income of household. Surprisingly, non-loyal customers tend to spend more per visit as compared to loyal customers. 
 
 
-#####Return transaction pattern of customers by loyalty and income
+#### Return transaction pattern of customers by loyalty and income
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -470,7 +464,7 @@ Spend_by_Income %>%
 
 
 
-####Income Group over Time
+### Income Group over Time
 
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_Income<-tpx%>%
@@ -484,7 +478,7 @@ Spend_by_Age_Income<-tpx%>%
             Avg_units_returned=mean(Total_units_return, na.rm=T))
 ```
 
-#####Total Spend pattern of customers by loyalty and income over time
+#### Total Spend pattern of customers by loyalty and income over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -499,7 +493,7 @@ Spend_by_Age_Income %>%
 Loyal customers behave exactly based on their earning capacity
 
 
-#####Spend per visit pattern of customers by loyalty and income over time
+#### Spend per visit pattern of customers by loyalty and income over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -513,7 +507,7 @@ Spend_by_Age_Income %>%
 It is interesting to observe a sharp decline in the richest non-loyal customers in 2016 while maintaining spend per visit over 2017 (total spend still continues to decline )
 
 
-#####Return transaction pattern of customers by loyalty and income over time
+#### Return transaction pattern of customers by loyalty and income over time
 ```{r message=FALSE, warning=FALSE, fig.align="center"}
 Spend_by_Age_Income %>% 
   filter(!INCOME_RANGE %in% c("null")) %>% 
@@ -526,11 +520,11 @@ Spend_by_Age_Income %>%
 ```
 
 
-##Clustering
+# Clustering
 
 Now we are ready to perform k-means clustering to segment our customers. Think of clusters as groups in the customer base. We will cluster the customers based on total spend in dollars, total units purchased, total return in dollars, total units returned, frequency of visits to the store and coverage(No of departments).Prior to the model, we will need to choose the number of customer groups, k, that are to be detected. 
 
-###The Elbow Method
+## The Elbow Method
 
 The Elbow method is a method of interpretation and validation of consistency within cluster analysis designed to help finding the appropriate number of clusters in a dataset. This method looks at the percentage of variance explained as a function of the number of clusters to identify the right number of clusters. Number of clusters should be chosen in a way that adding another cluster doesn't give a more distinct grouping of the data.
 
@@ -563,7 +557,7 @@ plot(1:k.max, wss,
      ylab="Total within-clusters sum of squares")
 ```
 
-###Running the K-means algorithm
+## Running the K-means algorithm
 
 The optimum number of clusters detected are 6. While performing the k-means analysis we have dropped all the model and features of the data and only kept numerical columns for the analysis.
 
@@ -579,7 +573,7 @@ autoplot(Cluster, data=data,  frame = TRUE)
 #ggplot(X, aes(Total_spent, No_of_dep, color = clus_no)) + geom_point()
 ```
 
-###Interpreting the results
+## Interpreting the results
 
 The clusters present some interesting insights about our customers. For brevity we wont display the tables. Here are the results:
 
@@ -611,11 +605,11 @@ The clusters present some interesting insights about our customers. For brevity 
 
 
 
-###Methodology
+## Methodology
 Since the results obtained from EDA do not bring about a distinctive difference in the shopping pattern for age groups or income groups, we perform clustering to segment our customers without demographic information.
 
 
-###Recommendations
+## Recommendations
 To get the most uplift from a marketing campaign, the campaign should be directed at
 the customers most likely to respond to it. By using customer segmentation to 
 determine actionable customer prototypes, the grocerer can test different 
@@ -626,7 +620,7 @@ offers to each of our 6 customer segment.
 For example, **Cluster 1 & 6 are our highly engaged customers** and hence can be targeted using bundled offers to up-sell. **Cluster 4 is our least engaged group**. They can be targeted with promotional offers to avoid churn in the store. 
 
 
-###Limitations
+## Limitations
 * Due to incomplete demographic information, there were a lot of missed opportunities of identifying patterns. 
 
 ### Next Steps
