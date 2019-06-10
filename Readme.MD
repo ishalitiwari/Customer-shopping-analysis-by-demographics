@@ -590,9 +590,9 @@ The clusters present some interesting insights about our customers. For brevity 
 **Cluster 6**: Contains 329 customers. These are our highly engaged customers with high spend, high frequency and low return
 
 
-##Summary
+# Summary
 
-###Data Insights
+## Data Insights
 
 * We see a declining trend in non loyal customers shopping with us over time, however minimal hike in Loyal customers which means that the grocerer is losing customers.
 * Surprisingly, non-loyal customers tend to spend more per visit as compared to loyal customers. 
@@ -623,7 +623,7 @@ For example, **Cluster 1 & 6 are our highly engaged customers** and hence can be
 ## Limitations
 * Due to incomplete demographic information, there were a lot of missed opportunities of identifying patterns. 
 
-### Next Steps
+## Next Steps
 * A deep dive study of niche customer demographics by combining the insights above with commodity preferences and location preferences would be ideal to create a customer intelligence engine.
 
 
