@@ -5,7 +5,7 @@
 # Introduction
 
 ## Problem Statement
-To study the interaction of household demographics on shopping patterns
+To study the interaction of household demographics on grocery shopping patterns
 
 ![](images/542176_5b71_2.jpg) !
 
@@ -15,7 +15,7 @@ To study the interaction of household demographics on shopping patterns
 
 When we are engaging with our customers, we may not want to direct our efforts to just one demographic. Understanding how demographics affects customers' shopping patterns will help us identify how a particular customer segment can be targeted based on its store footfalls, spending pattern, etc. and thereby increase overall sales of the store.
 
-To understand customer engagement based on demographics, we will using sample datasets from Kroger. The following datasets are used in this analysis:  
+To understand customer engagement based on demographics, we will be using sample datasets from Kroger. The following datasets are used in this analysis:  
 **Transaction**: It contains transactional data of each households for 2 years (2016 & 2017)  
 **Household**: Contains demographics data (age, income, etc.) of each household  
 **Product**: Contains product data (department, category, organic flag, etc.) for each product  
